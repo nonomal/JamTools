@@ -666,6 +666,7 @@ class serverloghandle(QThread):
 class WebFilesTransmitter(QThread):
     # start_btn_ss_signal = pyqtSignal(str)
     showm_signal = pyqtSignal(str)
+    resetPort_signal = pyqtSignal()
 
     def __init__(self):
         super(WebFilesTransmitter, self).__init__()
@@ -693,7 +694,8 @@ class WebFilesTransmitter(QThread):
             self.threadingServer = ThreadingServer(("", self.port), self.http_handler)
         except:
             print(sys.exc_info())
-            self.resetport()
+            self.resetPort_signal.emit()
+            return
         if self.sharepath == "请先选择要共享的文件":
             print("未选择要共享的文件!")
             self.showm_signal.emit("未选择要共享的文件!")
@@ -797,6 +799,7 @@ class WebFilesTransmitterBox(QGroupBox):
                                                         self.transmitter_web_start_btn.width(),
                                                         self.transmitter_web_start_btn.height())
         self.transmitter_reset_web_port_btn.clicked.connect(self.resetport)
+        self.WebFilesTransmitter.resetPort_signal.connect(self.resetport)
         self.transmitter_reset_web_port_btn.setToolTip("重置端口并重启服务,此前的链接将不可以!")
         self.transmitter_web_allowupload = QCheckBox("允许上传", self)
         self.transmitter_web_allowupload.setToolTip("允许网页端上传文件,文件将保存于共享的文件夹内")

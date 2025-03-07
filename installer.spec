@@ -3,7 +3,7 @@ import sys
 import os
 import shutil
 VERSON = "0.14.5B"
-pack_datas=[("icon.ico", "."),("icon.png", ".",),("html","."),("LICENSE", "."),
+pack_datas=[("icon.ico", "."),("icon.png", ".",),("html","html"),("LICENSE", "."),
            ("log.log","."),("fake_useragent_0.1.11.json","."),("PaddleOCRModel","PaddleOCRModel")]  # 额外的数据文件
 if sys.platform == "win32":
     pack_datas.append(("bin/win32","bin/win32"))
