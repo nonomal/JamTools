@@ -4,6 +4,7 @@ j_temp
 build/*
 !build/ubuntu
 !build/windows
+build/ubuntu/package
 dist
 sometest
 *.zip

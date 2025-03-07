@@ -559,8 +559,9 @@ class WebFilesTransmitter_infolabel(QLabel):
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
         
-        # 保存为临时文件
-        temp_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_qrcode.png")
+        # 使用系统临时文件夹
+        temp_dir = QStandardPaths.writableLocation(QStandardPaths.TempLocation)
+        temp_path = os.path.join(temp_dir, "jamtools_qrcode.png")
         img.save(temp_path)
         
         # 从文件加载QPixmap
