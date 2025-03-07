@@ -22,9 +22,9 @@ from socketserver import ThreadingMixIn,TCPServer
 import gzip
 
 import qrcode
-from PIL import ImageQt
+from PIL import Image
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QUrl, QObject, QSettings, QStandardPaths
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor, QDesktopServices, QIcon
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor, QDesktopServices, QIcon, QImage
 from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QGroupBox, QComboBox, QFileDialog, QCheckBox, QLineEdit
 from jampublic import apppath
 
@@ -558,10 +558,22 @@ class WebFilesTransmitter_infolabel(QLabel):
         qr.add_data(str(url))
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-        pix = ImageQt.toqpixmap(img)
-        self.qrcode_label.setPixmap(pix.scaled(self.qrcode_label.width(), self.qrcode_label.height()))
+        
+        # 保存为临时文件
+        temp_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "temp_qrcode.png")
+        img.save(temp_path)
+        
+        # 从文件加载QPixmap
+        pix = QPixmap(temp_path)
+        
+        # 保持宽高比进行缩放
+        label_size = min(self.qrcode_label.width(), self.qrcode_label.height())
+        scaled_pix = pix.scaled(label_size, label_size, 
+                              Qt.KeepAspectRatio, 
+                              Qt.SmoothTransformation)
+        
+        self.qrcode_label.setPixmap(scaled_pix)
 
-        # img.save()
 
     def set_info(self, sharepath="请先选择要共享的文件", ip="", port=0000):
         self.sharepath = sharepath
@@ -868,7 +880,6 @@ class WebFilesTransmitterBox(QGroupBox):
         self.transmitter_web_choice_files = QPushButton("选择文件", self)
         self.transmitter_web_choice_files.clicked.connect(choicefiles)
         self.transmitter_web_choice_files.setToolTip("选择一个文件夹内的多个文件共享")
-        self.transmitter_web_choice_files.setStatusTip("选择一个文件夹内的多个文件共享")
         self.transmitter_web_choice_dir = QPushButton("选择文件夹", self)
         self.transmitter_web_choice_dir.clicked.connect(choicedir)
         self.transmitter_web_choice_dir.setToolTip("选择一个文件夹,共享整个文件夹包括其子文件夹")
