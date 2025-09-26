@@ -1539,7 +1539,7 @@ class JamToolsWindow(QMainWindow):
         self.shift_pressed = False
         self.ctrl_pressed = False
         def on_press(key):
-            if not self.settings.value('smartShift', True, bool):
+            if not self.settings.value('smartShift', True, bool) or key is None:
                 return
             if key == keyboard.Key.shift:
                 self.shift_pressed = True

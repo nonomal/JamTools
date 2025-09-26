@@ -22,9 +22,9 @@ from socketserver import ThreadingMixIn,TCPServer
 import gzip
 
 import qrcode
-from PIL import ImageQt
+from PIL import Image
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QUrl, QObject, QSettings, QStandardPaths
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor, QDesktopServices, QIcon
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QColor, QDesktopServices, QIcon, QImage
 from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QGroupBox, QComboBox, QFileDialog, QCheckBox, QLineEdit
 from jampublic import apppath
 
@@ -558,10 +558,23 @@ class WebFilesTransmitter_infolabel(QLabel):
         qr.add_data(str(url))
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-        pix = ImageQt.toqpixmap(img)
-        self.qrcode_label.setPixmap(pix.scaled(self.qrcode_label.width(), self.qrcode_label.height()))
+        
+        # 使用系统临时文件夹
+        temp_dir = QStandardPaths.writableLocation(QStandardPaths.TempLocation)
+        temp_path = os.path.join(temp_dir, "jamtools_qrcode.png")
+        img.save(temp_path)
+        
+        # 从文件加载QPixmap
+        pix = QPixmap(temp_path)
+        
+        # 保持宽高比进行缩放
+        label_size = min(self.qrcode_label.width(), self.qrcode_label.height())
+        scaled_pix = pix.scaled(label_size, label_size, 
+                              Qt.KeepAspectRatio, 
+                              Qt.SmoothTransformation)
+        
+        self.qrcode_label.setPixmap(scaled_pix)
 
-        # img.save()
 
     def set_info(self, sharepath="请先选择要共享的文件", ip="", port=0000):
         self.sharepath = sharepath
@@ -653,6 +666,7 @@ class serverloghandle(QThread):
 class WebFilesTransmitter(QThread):
     # start_btn_ss_signal = pyqtSignal(str)
     showm_signal = pyqtSignal(str)
+    resetPort_signal = pyqtSignal()
 
     def __init__(self):
         super(WebFilesTransmitter, self).__init__()
@@ -680,7 +694,8 @@ class WebFilesTransmitter(QThread):
             self.threadingServer = ThreadingServer(("", self.port), self.http_handler)
         except:
             print(sys.exc_info())
-            self.resetport()
+            self.resetPort_signal.emit()
+            return
         if self.sharepath == "请先选择要共享的文件":
             print("未选择要共享的文件!")
             self.showm_signal.emit("未选择要共享的文件!")
@@ -784,6 +799,7 @@ class WebFilesTransmitterBox(QGroupBox):
                                                         self.transmitter_web_start_btn.width(),
                                                         self.transmitter_web_start_btn.height())
         self.transmitter_reset_web_port_btn.clicked.connect(self.resetport)
+        self.WebFilesTransmitter.resetPort_signal.connect(self.resetport)
         self.transmitter_reset_web_port_btn.setToolTip("重置端口并重启服务,此前的链接将不可以!")
         self.transmitter_web_allowupload = QCheckBox("允许上传", self)
         self.transmitter_web_allowupload.setToolTip("允许网页端上传文件,文件将保存于共享的文件夹内")
@@ -868,7 +884,6 @@ class WebFilesTransmitterBox(QGroupBox):
         self.transmitter_web_choice_files = QPushButton("选择文件", self)
         self.transmitter_web_choice_files.clicked.connect(choicefiles)
         self.transmitter_web_choice_files.setToolTip("选择一个文件夹内的多个文件共享")
-        self.transmitter_web_choice_files.setStatusTip("选择一个文件夹内的多个文件共享")
         self.transmitter_web_choice_dir = QPushButton("选择文件夹", self)
         self.transmitter_web_choice_dir.clicked.connect(choicedir)
         self.transmitter_web_choice_dir.setToolTip("选择一个文件夹,共享整个文件夹包括其子文件夹")

@@ -85,12 +85,16 @@ def get_Network_segments(ips):
     segment = []
     end = []
     for ip in ips:
-        if 128 < int(ip[:3]) < 191:
-            segment.append("".join([ip.split('.')[0], "."]))
-            end.append("".join([ip.split('.')[-3], ".", ip.split('.')[-2], ".", ip.split('.')[-1]]))
-        else:
-            segment.append("".join(str(s) + "." for s in ip.split('.')[:-1]))
-            end.append("".join(ip.split('.')[-1:]))
+        try:
+            if "." not in ip[:3] and 128 < int(ip[:3]) < 191:
+                segment.append("".join([ip.split('.')[0], "."]))
+                end.append("".join([ip.split('.')[-3], ".", ip.split('.')[-2], ".", ip.split('.')[-1]]))
+            else:
+                segment.append("".join(str(s) + "." for s in ip.split('.')[:-1]))
+                end.append("".join(ip.split('.')[-1:]))
+        except Exception as e:
+            print(e)
+        
     print(segment, end)
     return segment, end
 

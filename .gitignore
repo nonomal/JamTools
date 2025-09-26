@@ -4,6 +4,7 @@ j_temp
 build/*
 !build/ubuntu
 !build/windows
+build/ubuntu/package
 dist
 sometest
 *.zip
@@ -20,3 +21,6 @@ temp.jpg
 src/
 bin/darwin/ffmpeg
 bin/darwin/gifsicle
+docker/
+jamtools_env/
+
